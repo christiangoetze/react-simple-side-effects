@@ -13,6 +13,7 @@
   "homepage": "https://github.com/OG84/react-simple-side-effects#readme",
   "license": "ISC",
   "main": "index.ts",
+  "types": "types/index.d.ts",
   "files": [
     "**/*"
   ],
