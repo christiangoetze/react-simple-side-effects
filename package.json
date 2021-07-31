@@ -1,0 +1,9 @@
+{
+  "name": "react-simple-side-effects-monorepo",
+  "private": true,
+  "devDependencies": {
+    "@reduxjs/toolkit": "^1.6.1",
+    "lerna": "^4.0.0",
+    "rxjs": "^7.3.0"
+  }
+}

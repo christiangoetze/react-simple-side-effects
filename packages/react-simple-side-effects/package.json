@@ -1,0 +1,37 @@
+{
+  "name": "react-simple-side-effects",
+  "version": "0.0.0",
+  "description": "Simple side effects middleware for react",
+  "keywords": [
+    "react",
+    "redux",
+    "middleware",
+    "side",
+    "effects"
+  ],
+  "author": "Christian Götze <c.goetze@gmx.eu>",
+  "homepage": "https://github.com/OG84/react-simple-side-effects#readme",
+  "license": "ISC",
+  "main": "lib/index.ts",
+  "directories": {
+    "lib": "lib",
+    "test": "__tests__"
+  },
+  "files": [
+    "lib"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OG84/react-simple-side-effects.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: run tests from root\" && exit 1"
+  },
+  "bugs": {
+    "url": "https://github.com/OG84/react-simple-side-effects/issues"
+  },
+  "peerDependencies": {
+    "@reduxjs/toolkit": "^1.6.1",
+    "rxjs": "^7.3.0"
+  }
+}
