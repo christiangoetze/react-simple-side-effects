@@ -72,6 +72,11 @@ export const action2 = createAction<void>(Actions.ACTION_2);
 
 ### Define side effects (side-effects.ts)
 ```
+import {
+  Actions,
+  Action1
+} from './actions';
+import { AppState } from './states';
 import { beforeDispatch, afterDispatch } from 'react-simple-side-effects';
 
 export const initEffects = () => {
@@ -83,12 +88,12 @@ export const initEffects = () => {
     // do some stuff after state changed
   });
   
-  afterDispatch(Actions.MY_ACTION_1, ({action, oldState, newState}) => {
+  afterDispatch<Action1, AppState>(Actions.MY_ACTION_1, ({action, oldState, newState}) => {
     // access action or state
     console.log(action.payload, oldState, newState);
   });
   
-  afterDispatch(Actions.MY_ACTION_1, ({action, dispatch}) => {
+  afterDispatch<Action1>(Actions.MY_ACTION_1, ({action, dispatch}) => {
     // dispatch a new action
     dispatch(action2());
   });
