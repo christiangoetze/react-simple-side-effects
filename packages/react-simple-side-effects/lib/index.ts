@@ -2,21 +2,20 @@
 import { Dispatch, Middleware, PayloadAction } from "@reduxjs/toolkit";
 import { Observable, Subject, tap, filter, map } from "rxjs";
 
-export interface ActionPipelinePayload<T, AppState> {
-  action: T;
+export interface ActionPipelinePayload<Action = unknown, AppState = unknown> {
+  action: Action;
   oldState: AppState;
   newState?: AppState;
   dispatch: Dispatch<PayloadAction<unknown>>;
 }
 
-const beforeDispatchPipeline$ = new Subject<
-  ActionPipelinePayload<unknown, unknown>
->();
-const afterDispatchPipeline$ = new Subject<
-  ActionPipelinePayload<unknown, unknown>
->();
+const beforeDispatchPipeline$ = new Subject<ActionPipelinePayload>();
+const afterDispatchPipeline$ = new Subject<ActionPipelinePayload>();
 
-export const beforeDispatch = <T extends PayloadAction<unknown>, AppState>(
+export const beforeDispatch = <
+  T extends PayloadAction<unknown>,
+  AppState = unknown
+>(
   actionType: string,
   effect: (event: ActionPipelinePayload<T, AppState>) => unknown
 ) => {
@@ -30,7 +29,10 @@ export const beforeDispatch = <T extends PayloadAction<unknown>, AppState>(
     )
     .subscribe();
 };
-export const afterDispatch = <T extends PayloadAction<unknown>, AppState>(
+export const afterDispatch = <
+  T extends PayloadAction<unknown>,
+  AppState = unknown
+>(
   actionType: string,
   effect: (event: ActionPipelinePayload<T, AppState>) => unknown
 ) => {
@@ -46,7 +48,7 @@ export const afterDispatch = <T extends PayloadAction<unknown>, AppState>(
 };
 
 export const createMiddleware =
-  <AppState>(): Middleware<unknown, AppState> =>
+  <AppState = unknown>(): Middleware<unknown, AppState> =>
   (store) =>
   (next) =>
   (action) => {
@@ -66,7 +68,7 @@ export const createMiddleware =
     return result;
   };
 
-export function ofType<T extends PayloadAction<unknown>, AppState>(
+export function ofType<T extends PayloadAction<unknown>, AppState = unknown>(
   type: string
 ): (
   source$: Observable<ActionPipelinePayload<T, AppState>>
