@@ -94,7 +94,7 @@ export const initEffects = () => {
     console.log(action.payload, oldState, newState);
   });
   
-  afterDispatch<Action1>(Actions.MY_ACTION_1, ({action, dispatch}) => {
+  afterDispatch(Actions.MY_ACTION_1, ({dispatch}) => {
     // dispatch a new action
     dispatch(action2());
   });
