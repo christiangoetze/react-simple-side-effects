@@ -92,5 +92,8 @@ export const initEffects = () => {
     // dispatch a new action
     dispatch(action2());
   });
+  
+  ...
+};
 ```
 
