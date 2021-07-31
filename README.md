@@ -74,7 +74,8 @@ export const action2 = createAction<void>(Actions.ACTION_2);
 ```
 import {
   Actions,
-  Action1
+  Action1,
+  action2
 } from './actions';
 import { AppState } from './states';
 import { beforeDispatch, afterDispatch } from 'react-simple-side-effects';
