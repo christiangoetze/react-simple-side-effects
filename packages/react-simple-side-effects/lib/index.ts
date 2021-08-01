@@ -26,16 +26,16 @@ export interface CreateMiddleware<AppState> {
   middleware: Middleware<unknown, AppState>;
 }
 
-export const createMiddleware = <
+export function createMiddleware<
   AppState = unknown
->(): CreateMiddleware<AppState> => {
+>(): CreateMiddleware<AppState> {
   const beforeDispatchPipeline$ = new Subject<ActionPipelinePayload>();
   const afterDispatchPipeline$ = new Subject<ActionPipelinePayload>();
 
-  const beforeDispatch = <T extends PayloadAction<unknown>, AppState = unknown>(
+  function beforeDispatch<T extends PayloadAction<unknown>, AppState = unknown>(
     actionType: string | string[],
     effect: (event: ActionPipelinePayload<T, AppState>) => unknown
-  ) => {
+  ) {
     return beforeDispatchPipeline$
       .pipe(
         // @ts-ignore
@@ -45,11 +45,11 @@ export const createMiddleware = <
         )
       )
       .subscribe();
-  };
-  const afterDispatch = <T extends PayloadAction<unknown>, AppState = unknown>(
+  }
+  function afterDispatch<T extends PayloadAction<unknown>, AppState = unknown>(
     actionType: string | string[],
     effect: (event: ActionPipelinePayload<T, AppState>) => unknown
-  ) => {
+  ) {
     return afterDispatchPipeline$
       .pipe(
         // @ts-ignore
@@ -59,7 +59,7 @@ export const createMiddleware = <
         )
       )
       .subscribe();
-  };
+  }
 
   return {
     beforeDispatch,
@@ -81,7 +81,7 @@ export const createMiddleware = <
       return result;
     },
   };
-};
+}
 
 export function ofType<T extends PayloadAction<unknown>, AppState = unknown>(
   type: string | string[]

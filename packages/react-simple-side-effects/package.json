@@ -12,7 +12,7 @@
   "author": "Christian Götze <c.goetze@gmx.eu>",
   "homepage": "https://github.com/OG84/react-simple-side-effects#readme",
   "license": "ISC",
-  "main": "index.ts",
+  "main": "index.js",
   "types": "types/index.d.ts",
   "files": [
     "**/*"
