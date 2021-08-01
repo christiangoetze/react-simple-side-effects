@@ -44,6 +44,12 @@ export const initEffects = () => {
     dispatch(action2());
   });
   
+  afterDispatch(
+    [Actions.SET_PACKAGE, Actions.UPDATE_PACKAGE], () => {
+      // multi action side effect
+    }
+  );
+  
   ...
 };
 ```
