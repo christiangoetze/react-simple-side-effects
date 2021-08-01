@@ -1,6 +1,9 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { Dispatch, Middleware, PayloadAction } from "@reduxjs/toolkit";
-import { Observable, Subject, tap, filter, map, Subscription } from "rxjs";
+import { Observable, tap, filter, map, Subscription } from "rxjs";
+import {
+  createAfterDispatchPipeline,
+  createBeforeDispatchPipeline,
+} from "./pipeline";
 
 export interface ActionPipelinePayload<Action = unknown, AppState = unknown> {
   action: Action;
@@ -20,17 +23,16 @@ export type DispatchHandler = <
   effect: (event: ActionPipelinePayload<T, AppState>) => unknown
 ) => Subscription;
 
-export interface CreateMiddleware<AppState> {
+export type EffectsHandler = (args: {
   beforeDispatch: DispatchHandler;
   afterDispatch: DispatchHandler;
-  middleware: Middleware<unknown, AppState>;
-}
+}) => unknown;
 
-export function createMiddleware<
-  AppState = unknown
->(): CreateMiddleware<AppState> {
-  const beforeDispatchPipeline$ = new Subject<ActionPipelinePayload>();
-  const afterDispatchPipeline$ = new Subject<ActionPipelinePayload>();
+export function createMiddleware<AppState = unknown>(
+  effects: EffectsHandler
+): Middleware<unknown, AppState> {
+  const beforeDispatchPipeline$ = createBeforeDispatchPipeline();
+  const afterDispatchPipeline$ = createAfterDispatchPipeline();
 
   function beforeDispatch<T extends PayloadAction<unknown>, AppState = unknown>(
     actionType: string | string[],
@@ -61,26 +63,26 @@ export function createMiddleware<
       .subscribe();
   }
 
-  return {
-    beforeDispatch,
-    afterDispatch,
-    middleware: (store) => (next) => (action) => {
-      const oldState = store.getState();
-      beforeDispatchPipeline$.next({
-        action,
-        oldState: store.getState(),
-        dispatch: store.dispatch,
-      });
-      const result = next(action);
-      afterDispatchPipeline$.next({
-        action,
-        oldState,
-        newState: store.getState(),
-        dispatch: store.dispatch,
-      });
-      return result;
-    },
+  const middleware = (store) => (next) => (action) => {
+    const oldState = store.getState();
+    beforeDispatchPipeline$.next({
+      action,
+      oldState: store.getState(),
+      dispatch: store.dispatch,
+    });
+    const result = next(action);
+    afterDispatchPipeline$.next({
+      action,
+      oldState,
+      newState: store.getState(),
+      dispatch: store.dispatch,
+    });
+    return result;
   };
+
+  effects({ beforeDispatch, afterDispatch });
+
+  return middleware;
 }
 
 export function ofType<T extends PayloadAction<unknown>, AppState = unknown>(
