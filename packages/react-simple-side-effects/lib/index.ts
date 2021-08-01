@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { Dispatch, Middleware, PayloadAction } from "@reduxjs/toolkit";
-import { Observable, Subject, tap, filter, map } from "rxjs";
+import { Observable, Subject, tap, filter, map, Subscription } from "rxjs";
 
 export interface ActionPipelinePayload<Action = unknown, AppState = unknown> {
   action: Action;
@@ -9,64 +9,79 @@ export interface ActionPipelinePayload<Action = unknown, AppState = unknown> {
   dispatch: Dispatch<PayloadAction<unknown>>;
 }
 
-const beforeDispatchPipeline$ = new Subject<ActionPipelinePayload>();
-const afterDispatchPipeline$ = new Subject<ActionPipelinePayload>();
-
-export const beforeDispatch = <
-  T extends PayloadAction<unknown>,
+export type DispatchHandler = <
+  T extends {
+    payload: unknown;
+    type: string;
+  },
   AppState = unknown
 >(
   actionType: string | string[],
   effect: (event: ActionPipelinePayload<T, AppState>) => unknown
-) => {
-  return beforeDispatchPipeline$
-    .pipe(
-      // @ts-ignore
-      ofType<T, AppState>(actionType),
-      tap(({ action, oldState, dispatch }) =>
-        effect({ action, oldState, dispatch })
-      )
-    )
-    .subscribe();
-};
-export const afterDispatch = <
-  T extends PayloadAction<unknown>,
-  AppState = unknown
->(
-  actionType: string | string[],
-  effect: (event: ActionPipelinePayload<T, AppState>) => unknown
-) => {
-  return afterDispatchPipeline$
-    .pipe(
-      // @ts-ignore
-      ofType<T, AppState>(actionType),
-      tap(({ action, oldState, newState, dispatch }) =>
-        effect({ action, oldState, newState, dispatch })
-      )
-    )
-    .subscribe();
-};
+) => Subscription;
 
-export const createMiddleware =
-  <AppState = unknown>(): Middleware<unknown, AppState> =>
-  (store) =>
-  (next) =>
-  (action) => {
-    const oldState = store.getState();
-    beforeDispatchPipeline$.next({
-      action,
-      oldState: store.getState(),
-      dispatch: store.dispatch,
-    });
-    const result = next(action);
-    afterDispatchPipeline$.next({
-      action,
-      oldState,
-      newState: store.getState(),
-      dispatch: store.dispatch,
-    });
-    return result;
+export interface CreateMiddleware<AppState> {
+  beforeDispatch: DispatchHandler;
+  afterDispatch: DispatchHandler;
+  middleware: Middleware<unknown, AppState>;
+}
+
+export const createMiddleware = <
+  AppState = unknown
+>(): CreateMiddleware<AppState> => {
+  const beforeDispatchPipeline$ = new Subject<ActionPipelinePayload>();
+  const afterDispatchPipeline$ = new Subject<ActionPipelinePayload>();
+
+  const beforeDispatch = <T extends PayloadAction<unknown>, AppState = unknown>(
+    actionType: string | string[],
+    effect: (event: ActionPipelinePayload<T, AppState>) => unknown
+  ) => {
+    return beforeDispatchPipeline$
+      .pipe(
+        // @ts-ignore
+        ofType<T, AppState>(actionType),
+        tap(({ action, oldState, dispatch }) =>
+          effect({ action, oldState, dispatch })
+        )
+      )
+      .subscribe();
   };
+  const afterDispatch = <T extends PayloadAction<unknown>, AppState = unknown>(
+    actionType: string | string[],
+    effect: (event: ActionPipelinePayload<T, AppState>) => unknown
+  ) => {
+    return afterDispatchPipeline$
+      .pipe(
+        // @ts-ignore
+        ofType<T, AppState>(actionType),
+        tap(({ action, oldState, newState, dispatch }) =>
+          effect({ action, oldState, newState, dispatch })
+        )
+      )
+      .subscribe();
+  };
+
+  return {
+    beforeDispatch,
+    afterDispatch,
+    middleware: (store) => (next) => (action) => {
+      const oldState = store.getState();
+      beforeDispatchPipeline$.next({
+        action,
+        oldState: store.getState(),
+        dispatch: store.dispatch,
+      });
+      const result = next(action);
+      afterDispatchPipeline$.next({
+        action,
+        oldState,
+        newState: store.getState(),
+        dispatch: store.dispatch,
+      });
+      return result;
+    },
+  };
+};
 
 export function ofType<T extends PayloadAction<unknown>, AppState = unknown>(
   type: string | string[]
