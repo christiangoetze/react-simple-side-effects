@@ -16,7 +16,7 @@ export const beforeDispatch = <
   T extends PayloadAction<unknown>,
   AppState = unknown
 >(
-  actionType: string,
+  actionType: string | string[],
   effect: (event: ActionPipelinePayload<T, AppState>) => unknown
 ) => {
   return beforeDispatchPipeline$
@@ -33,7 +33,7 @@ export const afterDispatch = <
   T extends PayloadAction<unknown>,
   AppState = unknown
 >(
-  actionType: string,
+  actionType: string | string[],
   effect: (event: ActionPipelinePayload<T, AppState>) => unknown
 ) => {
   return afterDispatchPipeline$
@@ -69,15 +69,16 @@ export const createMiddleware =
   };
 
 export function ofType<T extends PayloadAction<unknown>, AppState = unknown>(
-  type: string
+  type: string | string[]
 ): (
   source$: Observable<ActionPipelinePayload<T, AppState>>
 ) => Observable<ActionPipelinePayload<T, AppState>> {
   return (source$) =>
     source$.pipe(
-      filter(
-        (event: ActionPipelinePayload<T, AppState>) =>
-          event.action.type === type
+      filter((event: ActionPipelinePayload<T, AppState>) =>
+        Array.isArray(type)
+          ? type.includes(event.action.type)
+          : event.action.type === type
       ),
       map((event) => event as ActionPipelinePayload<T, AppState>)
     );
