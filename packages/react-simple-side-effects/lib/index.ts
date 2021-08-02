@@ -1,5 +1,13 @@
 import { Dispatch, Middleware, PayloadAction } from "@reduxjs/toolkit";
-import { Observable, tap, filter, map, Subscription } from "rxjs";
+import {
+  Observable,
+  tap,
+  filter,
+  map,
+  Subscription,
+  Subject,
+  takeUntil,
+} from "rxjs";
 import {
   createAfterDispatchPipeline,
   createBeforeDispatchPipeline,
@@ -10,57 +18,99 @@ export interface ActionPipelinePayload<Action = unknown, AppState = unknown> {
   oldState: AppState;
   newState?: AppState;
   dispatch: Dispatch<PayloadAction<unknown>>;
+  destroyMiddleware: () => void;
 }
 
-export type DispatchHandler = <
+export type DispatchHandler<
   T extends {
     payload: unknown;
     type: string;
   },
   AppState = unknown
->(
+> = (
   actionType: string | string[],
   effect: (event: ActionPipelinePayload<T, AppState>) => unknown
 ) => Subscription;
 
-export type EffectsHandler = (args: {
-  beforeDispatch: DispatchHandler;
-  afterDispatch: DispatchHandler;
+export type EffectsHandler<AppState = unknown> = (args: {
+  beforeDispatch: DispatchHandler<PayloadAction<unknown>, AppState>;
+  afterDispatch: DispatchHandler<PayloadAction<unknown>, AppState>;
+  onDestroy: (handler: () => unknown) => Subscription;
 }) => unknown;
 
 export function createMiddleware<AppState = unknown>(
-  effects: EffectsHandler
-): Middleware<unknown, AppState> {
+  effects: EffectsHandler<AppState>
+): Middleware {
   const beforeDispatchPipeline$ = createBeforeDispatchPipeline();
   const afterDispatchPipeline$ = createAfterDispatchPipeline();
+  const destroy$ = new Subject();
+  const subs: Subscription[] = [];
 
-  function beforeDispatch<T extends PayloadAction<unknown>, AppState = unknown>(
+  function beforeDispatch<T extends PayloadAction<unknown>>(
     actionType: string | string[],
     effect: (event: ActionPipelinePayload<T, AppState>) => unknown
   ) {
-    return beforeDispatchPipeline$
+    const sub = beforeDispatchPipeline$
       .pipe(
         // @ts-ignore
         ofType<T, AppState>(actionType),
-        tap(({ action, oldState, dispatch }) =>
-          effect({ action, oldState, dispatch })
-        )
+        tap(({ action, oldState, dispatch, destroyMiddleware }) =>
+          effect({ action, oldState, dispatch, destroyMiddleware })
+        ),
+        takeUntil(destroy$)
       )
       .subscribe();
+    subs.push(sub);
+    return sub;
   }
-  function afterDispatch<T extends PayloadAction<unknown>, AppState = unknown>(
+  function afterDispatch<T extends PayloadAction<unknown>>(
     actionType: string | string[],
     effect: (event: ActionPipelinePayload<T, AppState>) => unknown
   ) {
-    return afterDispatchPipeline$
+    const sub = afterDispatchPipeline$
       .pipe(
         // @ts-ignore
         ofType<T, AppState>(actionType),
-        tap(({ action, oldState, newState, dispatch }) =>
-          effect({ action, oldState, newState, dispatch })
-        )
+        tap(({ action, oldState, newState, dispatch, destroyMiddleware }) =>
+          effect({ action, oldState, newState, dispatch, destroyMiddleware })
+        ),
+        takeUntil(destroy$)
       )
       .subscribe();
+    subs.push(sub);
+    return sub;
+  }
+
+  function onDestroy(handler: () => unknown) {
+    const sub = destroy$
+      .pipe(
+        tap(() => {
+          handler();
+          sub.unsubscribe();
+        })
+      )
+      .subscribe();
+    return sub;
+  }
+
+  function destroyMiddleware(): void {
+    destroy$.next({});
+  }
+
+  function ofType<T extends PayloadAction<unknown>>(
+    type: string | string[]
+  ): (
+    source$: Observable<ActionPipelinePayload<T, AppState>>
+  ) => Observable<ActionPipelinePayload<T, AppState>> {
+    return (source$) =>
+      source$.pipe(
+        filter((event: ActionPipelinePayload<T, AppState>) =>
+          Array.isArray(type)
+            ? type.includes(event.action.type)
+            : !type || event.action.type === type
+        ),
+        map((event) => event as ActionPipelinePayload<T, AppState>)
+      );
   }
 
   const middleware = (store) => (next) => (action) => {
@@ -69,6 +119,7 @@ export function createMiddleware<AppState = unknown>(
       action,
       oldState: store.getState(),
       dispatch: store.dispatch,
+      destroyMiddleware,
     });
     const result = next(action);
     afterDispatchPipeline$.next({
@@ -76,27 +127,12 @@ export function createMiddleware<AppState = unknown>(
       oldState,
       newState: store.getState(),
       dispatch: store.dispatch,
+      destroyMiddleware,
     });
     return result;
   };
 
-  effects({ beforeDispatch, afterDispatch });
+  effects({ beforeDispatch, afterDispatch, onDestroy });
 
   return middleware;
-}
-
-export function ofType<T extends PayloadAction<unknown>, AppState = unknown>(
-  type: string | string[]
-): (
-  source$: Observable<ActionPipelinePayload<T, AppState>>
-) => Observable<ActionPipelinePayload<T, AppState>> {
-  return (source$) =>
-    source$.pipe(
-      filter((event: ActionPipelinePayload<T, AppState>) =>
-        Array.isArray(type)
-          ? type.includes(event.action.type)
-          : event.action.type === type
-      ),
-      map((event) => event as ActionPipelinePayload<T, AppState>)
-    );
 }
