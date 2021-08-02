@@ -27,11 +27,11 @@ import { EffectsHandler } from 'react-simple-side-effects';
 
 export const sideEffects: EffectsHandler = ({ beforeDispatch, afterDispatch }) => {
   beforeDispatch(Actions.MY_ACTION_1, () => {
-    // do some stuff before state changed
+    // do some async stuff before state changed
   });
 
   afterDispatch(Actions.MY_ACTION_1, () => {
-    // do some stuff after state changed
+    // do some async stuff after state changed
   });
   
   afterDispatch<Action1, AppState>(Actions.MY_ACTION_1, ({action, oldState, newState}) => {
@@ -49,6 +49,10 @@ export const sideEffects: EffectsHandler = ({ beforeDispatch, afterDispatch }) =
       // multi action side effect
     }
   );
+  
+   afterDispatch('', () => {
+    // after any action
+  });
   
   ...
 };
