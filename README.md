@@ -23,9 +23,9 @@ import {
   action2
 } from './actions';
 import { AppState } from './states';
-import { beforeDispatch, afterDispatch } from 'react-simple-side-effects';
+import { EffectsHandler } from 'react-simple-side-effects';
 
-export const initEffects = () => {
+export const sideEffects: EffectsHandler = ({ beforeDispatch, afterDispatch }) => {
   beforeDispatch(Actions.MY_ACTION_1, () => {
     // do some stuff before state changed
   });
@@ -73,39 +73,13 @@ export const action2 = createAction<void>(Actions.ACTION_2);
 ### Create Middleware (store.ts)
 ```typescript
 import { createMiddleware } from 'react-simple-side-effects';
+import { sideEffects } from './side-effects';
 
 ...
 
 const store = configureStore<AppState>({
   ...
-  middleware: [createMiddleware<AppState>()],
+  middleware: [createMiddleware<AppState>(sideEffects)],
 });
-
-```
-
-### Init effects (_app.tsx)
-```typescript
-import type { AppProps } from 'next/app';
-import { useEffect } from 'react';
-import { Provider } from 'react-redux';
-import { appWithTranslation } from 'next-i18next';
-import store from '../lib/store/store';
-import { initEffects } from '../lib/store/side-effects';
-
-function MyApp({ Component, pageProps }: AppProps) {
-  
-  useEffect(() => {
-    initEffects();
-  }, []);
-
-  return (
-    <Provider store={store}>
-      <Component {...pageProps} />
-    </Provider>
-  );
-}
-
-export default appWithTranslation(MyApp);
-
 ```
 
