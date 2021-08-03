@@ -1,6 +1,6 @@
 {
   "name": "@og84/react-simple-side-effects",
-  "version": "0.0.16",
+  "version": "0.0.17",
   "description": "Simple side effects middleware for react",
   "keywords": [
     "react",
@@ -17,6 +17,9 @@
   "files": [
     "**/*"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/OG84/react-simple-side-effects.git"
