@@ -1,6 +1,6 @@
 {
   "name": "@og84/react-simple-side-effects",
-  "version": "0.0.18",
+  "version": "0.0.19",
   "description": "Simple side effects middleware for react",
   "keywords": [
     "react",
