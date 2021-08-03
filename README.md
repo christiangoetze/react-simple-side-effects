@@ -1,5 +1,7 @@
 # react-simple-side-effects
-Simple side effects middleware for react
+Simple side effects middleware for react. Enables you to execute async side effects when a store action is dispatched.
+
+[![Node.js CI](https://github.com/OG84/react-simple-side-effects/actions/workflows/node.js.yml/badge.svg)](https://github.com/OG84/react-simple-side-effects/actions/workflows/node.js.yml)
 
 ## Install
 
@@ -11,7 +13,6 @@ npm i react-simple-side-effects
 
 - @reduxjs/toolkit
 - rxjs
-- typescript
 
 ## Usage
 
@@ -27,11 +28,11 @@ import { EffectsHandler } from 'react-simple-side-effects';
 
 export const sideEffects: EffectsHandler = ({ beforeDispatch, afterDispatch }) => {
   beforeDispatch(Actions.MY_ACTION_1, () => {
-    // do some stuff before state changed
+    // do some async stuff before state changed
   });
 
   afterDispatch(Actions.MY_ACTION_1, () => {
-    // do some stuff after state changed
+    // do some async stuff after state changed
   });
   
   afterDispatch<Action1, AppState>(Actions.MY_ACTION_1, ({action, oldState, newState}) => {
@@ -49,6 +50,10 @@ export const sideEffects: EffectsHandler = ({ beforeDispatch, afterDispatch }) =
       // multi action side effect
     }
   );
+  
+   afterDispatch('', () => {
+    // after any action
+  });
   
   ...
 };
