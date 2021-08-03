@@ -2,7 +2,7 @@
   "name": "react-simple-side-effects-monorepo",
   "private": true,
   "scripts": {
-    "deploy": "lerna version patch --force-publish --yes && npm run build && lerna publish from-package --yes --contents dist --access public",
+    "deploy": "lerna version patch --force-publish --yes && npm run build && lerna publish from-package --yes --contents dist",
     "build": "lerna run build",
     "test": "jest"
   },
