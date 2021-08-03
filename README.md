@@ -1,5 +1,7 @@
 # react-simple-side-effects
-Simple side effects middleware for react
+Simple side effects middleware for react. Enables you to execute async side effects when a store action is dispatched.
+
+[![Node.js CI](https://github.com/OG84/react-simple-side-effects/actions/workflows/node.js.yml/badge.svg)](https://github.com/OG84/react-simple-side-effects/actions/workflows/node.js.yml)
 
 ## Install
 
