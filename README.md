@@ -6,7 +6,7 @@ Simple side effects middleware for react. Enables you to execute async side effe
 ## Install
 
 ```
-npm i react-simple-side-effects
+npm i @og84/react-simple-side-effects
 ```
 
 ## Required peer dependencies
