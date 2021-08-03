@@ -11,7 +11,6 @@ npm i react-simple-side-effects
 
 - @reduxjs/toolkit
 - rxjs
-- typescript
 
 ## Usage
 
