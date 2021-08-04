@@ -21,20 +21,15 @@ export interface ActionPipelinePayload<Action = unknown, AppState = unknown> {
   destroyMiddleware: () => void;
 }
 
-export type DispatchHandler<
-  T extends {
-    payload: unknown;
-    type: string;
-  },
-  AppState = unknown
-> = (
-  actionType: string | string[],
-  effect: (event: ActionPipelinePayload<T, AppState>) => unknown
-) => Subscription;
-
 export type EffectsHandler<AppState = unknown> = (args: {
-  beforeDispatch: DispatchHandler<PayloadAction<unknown>, AppState>;
-  afterDispatch: DispatchHandler<PayloadAction<unknown>, AppState>;
+  beforeDispatch: <T extends PayloadAction<unknown>>(
+    actionType: string | string[],
+    effect: (event: ActionPipelinePayload<T, AppState>) => unknown
+  ) => Subscription;
+  afterDispatch: <T extends PayloadAction<unknown>>(
+    actionType: string | string[],
+    effect: (event: ActionPipelinePayload<T, AppState>) => unknown
+  ) => Subscription;
   onDestroy: (handler: () => unknown) => Subscription;
 }) => unknown;
 
