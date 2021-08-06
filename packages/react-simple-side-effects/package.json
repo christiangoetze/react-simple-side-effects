@@ -1,6 +1,6 @@
 {
   "name": "@og84/react-simple-side-effects",
-  "version": "0.0.21",
+  "version": "0.0.22",
   "description": "Simple side effects middleware for react",
   "keywords": [
     "react",
