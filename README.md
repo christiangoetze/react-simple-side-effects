@@ -26,7 +26,7 @@ import {
 import { AppState } from './states';
 import { EffectsHandler } from 'react-simple-side-effects';
 
-export const sideEffects: EffectsHandler = ({ beforeDispatch, afterDispatch }) => {
+export const sideEffects: EffectsHandler<AppState> = ({ beforeDispatch, afterDispatch }) => {
   beforeDispatch(Actions.MY_ACTION_1, () => {
     // do some async stuff before state changed
   });
@@ -35,7 +35,7 @@ export const sideEffects: EffectsHandler = ({ beforeDispatch, afterDispatch }) =
     // do some async stuff after state changed
   });
   
-  afterDispatch<Action1, AppState>(Actions.MY_ACTION_1, ({action, oldState, newState}) => {
+  afterDispatch<Action1>(Actions.MY_ACTION_1, ({action, oldState, newState}) => {
     // access action or state
     console.log(action.payload, oldState, newState);
   });
