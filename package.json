@@ -13,7 +13,7 @@
     "@reduxjs/toolkit": "^1.6.1",
     "@types/jest": "^26.0.24",
     "babel-jest": "^27.0.6",
-    "esbuild": "^0.14.0",
+    "esbuild": "^0.15.0",
     "jest": "^27.0.6",
     "lerna": "^4.0.0",
     "rxjs": "^7.3.0",
